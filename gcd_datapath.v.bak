@@ -1,0 +1,90 @@
+module gcd_datapath(
+		input clk, //时钟信号
+		input clr, //清零信号
+		input xmsel, //控制x值
+		input ymsel, //控制y值
+		input xld,   //控制x寄存器
+		input yld,   //控制y寄存器
+		input gld,   //控制输出寄存器
+		input [3:0] xin, //输入x
+		input [3:0] yin, //输入y
+		output wire eqflg, //判断xy是否相等
+		output wire ltflg,  //判断x是否小于y
+		output[3:0] gcd
+		);
+	wire clk,clr,xmsel,ymsel,xld,yld,gld,xin,yin,gcd;
+	reg [3:0] xmy, ymx, gcd_out,xl,yl,x,y;
+	reg lt,eq;
+	
+	always @{*} begin
+		xmy=x-y;
+		ymx=y-x;
+	end
+	
+	//xreg
+	always @(posedge clk) begin
+		if (clr==1) begin
+			x=0;
+		end
+		else if(xld=1) begin
+			x=xl;
+		end
+	end
+	//yreg
+	always @(posedge clk) begin
+		if (clr==1) begin
+			y=0;
+		end
+		else if(yld=1) begin
+			y=yl;
+		end
+	end
+	
+	//equal and less than
+	always @{*} begin
+		if (x==y) begin
+			assign eq=1;
+		end
+		else begin
+			assign eq=0;
+			if (x<y) begin
+				lt=1;
+			end
+			else begin
+				lt=0;
+			end
+		end
+	end
+	
+	assign ltflg=lt;
+	assign eqflg=eq;
+	
+	//xmux
+	always @{*} begin
+		if (xmsel==0) begin
+			x1=x;
+		end
+		else begin
+			x1=xmy;
+		end
+	end
+	//ymux
+	always @{*} begin
+		if (ymsel==0) begin
+			y1=y;
+		end
+		else begin
+			y1=ymx;
+		end
+	end
+	//greg
+	always @{posedge clk} begin
+		if (clr=1) begin
+			gcd_out=0;
+		end
+		else if(gld=1) begin
+			gcd_out=x;
+		end
+	end	
+	assign gcd=gcd_out;
+endmodule;
